@@ -63,6 +63,16 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="CecilExtensions.cs" />
     <Compile Include="DefinitionFinder.cs" />
+    <Compile Include="Gendarme\CecilRocks.cs" />
+    <Compile Include="Gendarme\CollectionRocks.cs" />
+    <Compile Include="Gendarme\CustomAttributeRocks.cs" />
+    <Compile Include="Gendarme\InstructionRocks.cs" />
+    <Compile Include="Gendarme\MethodRocks.cs" />
+    <Compile Include="Gendarme\MethodSignature.cs" />
+    <Compile Include="Gendarme\Namespace.cs" />
+    <Compile Include="Gendarme\OpCodeBitmask.cs" />
+    <Compile Include="Gendarme\PrimitiveReferences.cs" />
+    <Compile Include="Gendarme\TypeRocks.cs" />
     <Compile Include="InstructionsListExtensions.cs" />
     <Compile Include="ModuleWeaver.cs" />
     <Compile Include="WeavingException.cs" />
