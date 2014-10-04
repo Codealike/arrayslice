@@ -141,7 +141,6 @@ namespace AssemblyToProcess
         public void Aliasing()
         {
             var segment = new ArraySlice<float>(InitializeData(), 10, 5);
-
             var segmentAlias = segment;
 
             float t;
@@ -163,8 +162,8 @@ namespace AssemblyToProcess
 
         public void MultipleParameters(ArraySlice<float> getParameter, ArraySlice<float> setParameter)
         {
-            for (int i = 0; i < 4; i++)
-                setParameter[i] = getParameter[i];
+            //for (int i = 0; i < 4; i++)
+            //    setParameter[i] = getParameter[i];
         }
     }
 }

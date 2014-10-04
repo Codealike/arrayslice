@@ -5,6 +5,7 @@ using Mono.Cecil.Rocks;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using ArraySliceAddin.Fody;
+using ArraySliceAddin.Fody.Gendarme;
 
 namespace ArraySliceAddin.Fody
 {
@@ -97,16 +98,14 @@ namespace ArraySliceAddin.Fody
             {
                 method.Body.SimplifyMacros();
 
-                var occurrences = LocateIntermediateInjectionPoints(method, typeToFind);
-                occurrences = PruneUnusedInjectionPoints(method, typeToFind, occurrences);
+                var occurrences = LocateIntermediateInjectionPoints(method, typeToFind).ToList();
+                occurrences = PruneUnusedInjectionPoints(method, typeToFind, occurrences).ToList();
+                occurrences.Reverse();
 
-                foreach (SliceParameters slice in occurrences.Reverse())
-                {
-                    IntroduceIntermediateVariables(method, slice);
-                    ReplaceIndexersCalls(method, slice);
-                }
+                IntroduceIntermediateVariables(method, occurrences);
+                ReplaceIndexersCalls(method, occurrences);
 
-                method.Body.OptimizeMacros();
+                //method.Body.OptimizeMacros();
             }
         }
 
@@ -116,68 +115,76 @@ namespace ArraySliceAddin.Fody
             return occurrences;
         }
 
-        public void ReplaceIndexersCalls(MethodDefinition method, SliceParameters slice)
-        {
-            var arraySliceType = ModuleDefinition.Import(typeof(ArraySlice<>)).MakeGenericInstanceType(slice.GenericArgument);
-
+        public void ReplaceIndexersCalls(MethodDefinition method, IList<SliceParameters> slices)
+        {           
             var instructions = method.Body.Instructions;
-            for (int offset = 0; offset < instructions.Count; offset++)
+
+            foreach ( var slice in slices.Take(1) )
             {
-                var instruction = instructions[offset];
+                var arraySliceType = ModuleDefinition.Import(typeof(ArraySlice<>)).MakeGenericInstanceType(slice.GenericArgument);
 
-                if (!instruction.OpCode.IsCall())
-                    continue;
-
-                var methodReference = instruction.Operand as MethodReference;
-                if (methodReference == null)
-                    continue;
-
-                if (methodReference.Name != "get_Item" && methodReference.Name != "set_Item")
-                    continue;
-
-                var methodDefinition = methodReference.Resolve();
-                var genericInstanceType = methodDefinition.DeclaringType;
-                if (genericInstanceType.FullName != arraySliceType.ElementType.FullName)
-                    continue;
-
-                // FIXME: We know we cannot process if anything happens between the push of the array slice and the final operation.
-                if (methodDefinition.IsGetter)
+                for (int offset = 0; offset < instructions.Count; offset++)
                 {
-                    // Original GET:
-                    // 1    ldarg.s segment              $ Push the object to call 
-                    // =    ldloc.1                      $ Push the parameter
-                    // 2    callvirt instance !0 class ArraySegment.ArraySlice`1<float32>::get_Item(int32)
-                    // =    stloc.s t                    $ Do whatever with the result of the GET call
-                    if (instructions[offset - 2].OpCode == OpCodes.Ldarg || instructions[offset - 2].OpCode == OpCodes.Ldloc)
+                    var instruction = instructions[offset];
+
+                    if (!instruction.OpCode.IsCall())
+                        continue;
+
+                    var methodReference = instruction.Operand as MethodReference;
+                    if (methodReference == null)
+                        continue;
+
+                    if (methodReference.Name != "get_Item" && methodReference.Name != "set_Item")
+                        continue;
+
+                    var methodDefinition = methodReference.Resolve();
+
+                    var genericInstanceType = methodDefinition.DeclaringType;
+                    if (genericInstanceType.FullName != arraySliceType.ElementType.FullName)
+                        continue;
+
+                    // FIXME: We know we cannot process if anything happens between the push of the array slice and the final operation.
+                    if (methodDefinition.IsGetter)
                     {
+                        var objectToCall = instruction.TraceBack(methodReference, 0);
+                        var parameter = instruction.TraceBack(methodReference, -1);
+
+                        // Original GET:
+                        // 1    ldarg.s segment              $ Push the object to call 
+                        // =    ldloc.1                      $ Push the parameter
+                        // 2    callvirt instance !0 class ArraySegment.ArraySlice`1<float32>::get_Item(int32)
+                        // =    stloc.s t                    $ Do whatever with the result of the GET call
+
                         // Target GET:
                         // 1    ldloc.s data                 $ Push the object to call  
                         // =    ldloc.1                      $ Push the parameter
                         // 2    ldloc.s offset
                         // 2    add                          $ Add the parameter (i) and the offset. 
                         // 2    ldelem.r4                    $ Use standard ldelem with type to get the value from the array.
-                        // =    stloc.s t                    $ Do whatever with the result of the GET call                    
+                        // =    stloc.s t                    $ Do whatever with the result of the GET call   
 
-                        instructions[offset - 2] = Instruction.Create(OpCodes.Ldloc, slice.ArrayVariable);
+                        int objectToCallIndex = instructions.IndexOf(objectToCall);
+                        int parameterIndex = instructions.IndexOf(parameter);
 
+                        instructions[objectToCallIndex] = Instruction.Create(OpCodes.Ldloc, slice.ArrayVariable);
                         instructions[offset] = Instruction.Create(OpCodes.Ldelem_Any, slice.GenericArgument);
-                        instructions.Insert(offset, new[] { 
-                        Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
-                        Instruction.Create( OpCodes.Add ),
-                    });
-
+                        instructions.Insert(parameterIndex + 1, new[] { 
+                                Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
+                                Instruction.Create( OpCodes.Add )                                
+                        });
                     }
-                }
-                else if (methodDefinition.IsSetter)
-                {
-                    // Original SET:
-                    // 1		ldarg segment	    $ Push the object to call 
-                    // =		ldloc.0		        $ Push the parameter
-                    // =		ldc.r4 2		    $ Push the value to set
-                    // 2		callvirt instance void class ArraySegment.ArraySlice`1<float32>::set_Item(int32, !0)
-                    // -        nop			        $ Check if it even exists after SimplifyMacros in the collection.
-                    if (instructions[offset - 3].OpCode == OpCodes.Ldarg || instructions[offset - 3].OpCode == OpCodes.Ldloc)
+                    else if (methodDefinition.IsSetter)
                     {
+                        var objectToCall = instruction.TraceBack(methodReference, 0);
+                        var parameter = instruction.TraceBack(methodReference, -1);
+
+                        // Original SET:
+                        // 1		ldarg segment	    $ Push the object to call 
+                        // =		ldloc.0		        $ Push the parameter
+                        // =		ldc.r4 2		    $ Push the value to set
+                        // 2		callvirt instance void class ArraySegment.ArraySlice`1<float32>::set_Item(int32, !0)
+                        // -        nop			        $ Check if it even exists after SimplifyMacros in the collection.
+
                         // Target SET
                         // 1		ldloc data		    $ Push the array
                         // =		ldloc.0		        $ Push the parameter
@@ -185,50 +192,59 @@ namespace ArraySliceAddin.Fody
                         // 2		add      		    $ Add the parameter (i) and the offset. 
                         // =		ldc.r4 2		    $ Push the value to set. Use standard ldc with type and check if it  is optimized afterwards.
                         // 2		stelem   		    $ Use standard stelem with type and check if it is optimized afterwards.
-                        instructions[offset] = Instruction.Create(OpCodes.Stelem_Any, slice.GenericArgument);
 
-                        instructions[offset - 3] = Instruction.Create(OpCodes.Ldloc, slice.ArrayVariable);
-                        instructions.Insert(offset - 1, new[] { 
-                        Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
-                        Instruction.Create( OpCodes.Add ),
-                    });
+                        int objectToCallIndex = instructions.IndexOf(objectToCall);
+                        int parameterIndex = instructions.IndexOf(parameter);
+
+                        instructions[objectToCallIndex] = Instruction.Create(OpCodes.Ldloc, slice.ArrayVariable);
+                        instructions[offset] = Instruction.Create(OpCodes.Stelem_Any, slice.GenericArgument);
+                        instructions.Insert(parameterIndex + 1, new[] { 
+                                Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
+                                Instruction.Create( OpCodes.Add )                                
+                        });
+
                     }
+                    else continue;
                 }
-                else continue;
             }
+
+
         }
 
-        public void IntroduceIntermediateVariables(MethodDefinition method, SliceParameters slice)
+        public void IntroduceIntermediateVariables(MethodDefinition method, IEnumerable<SliceParameters> slices)
         {
             var body = method.Body;
             var instructions = body.Instructions;
 
-            var arraySliceType = ModuleDefinition.Import(typeof(ArraySlice<>)).MakeGenericInstanceType(slice.GenericArgument);
-            var arrayGetMethod = ModuleDefinition.Import(arraySliceType.Resolve().Find("GetArray")).MakeHostInstanceGeneric(slice.GenericArgument);
-            var offsetGetMethod = ModuleDefinition.Import(arraySliceType.Resolve().Find("GetOffset")).MakeHostInstanceGeneric(slice.GenericArgument);
+            foreach ( var slice in slices )
+            {
+                var arraySliceType = ModuleDefinition.Import(typeof(ArraySlice<>)).MakeGenericInstanceType(slice.GenericArgument);
+                var arrayGetMethod = ModuleDefinition.Import(arraySliceType.Resolve().Find("GetArray")).MakeHostInstanceGeneric(slice.GenericArgument);
+                var offsetGetMethod = ModuleDefinition.Import(arraySliceType.Resolve().Find("GetOffset")).MakeHostInstanceGeneric(slice.GenericArgument);
 
-            var arrayTypeOfT = slice.GenericArgument.MakeArrayType();
+                var arrayTypeOfT = slice.GenericArgument.MakeArrayType();
 
-            VariableDefinition arrayVariable = new VariableDefinition(slice.ArrayLink, arrayTypeOfT);
-            VariableDefinition offsetVariable = new VariableDefinition(slice.OffsetLink, ModuleDefinition.TypeSystem.Int32);
+                VariableDefinition arrayVariable = new VariableDefinition(slice.ArrayLink, arrayTypeOfT);
+                VariableDefinition offsetVariable = new VariableDefinition(slice.OffsetLink, ModuleDefinition.TypeSystem.Int32);
 
-            method.Body.Variables.Add(arrayVariable);
-            method.Body.Variables.Add(offsetVariable);
+                method.Body.Variables.Add(arrayVariable);
+                method.Body.Variables.Add(offsetVariable);
 
-            var instructionsToAdd = new Instruction[] 
-        {
-            slice.IsVariable ? Instruction.Create(OpCodes.Ldloc, (VariableDefinition)slice.Definition) : Instruction.Create(OpCodes.Ldarg, (ParameterDefinition)slice.Definition),
-            Instruction.Create(OpCodes.Callvirt, arrayGetMethod),
-            Instruction.Create(OpCodes.Stloc, arrayVariable),
-            slice.IsVariable ? Instruction.Create(OpCodes.Ldloc, (VariableDefinition)slice.Definition) : Instruction.Create(OpCodes.Ldarg, (ParameterDefinition)slice.Definition),
-            Instruction.Create(OpCodes.Callvirt, offsetGetMethod),
-            Instruction.Create(OpCodes.Stloc, offsetVariable)
-        };
+                var instructionsToAdd = new Instruction[] 
+                {
+                    slice.IsVariable ? Instruction.Create(OpCodes.Ldloc, (VariableDefinition)slice.Definition) : Instruction.Create(OpCodes.Ldarg, (ParameterDefinition)slice.Definition),
+                    Instruction.Create(OpCodes.Callvirt, arrayGetMethod),
+                    Instruction.Create(OpCodes.Stloc, arrayVariable),
+                    slice.IsVariable ? Instruction.Create(OpCodes.Ldloc, (VariableDefinition)slice.Definition) : Instruction.Create(OpCodes.Ldarg, (ParameterDefinition)slice.Definition),
+                    Instruction.Create(OpCodes.Callvirt, offsetGetMethod),
+                    Instruction.Create(OpCodes.Stloc, offsetVariable)
+                };
 
-            instructions.Insert(slice.IlOffset + 1, instructionsToAdd);
+                instructions.Insert(slice.IlOffset + 1, instructionsToAdd);
 
-            slice.ArrayVariable = arrayVariable;
-            slice.OffsetVariable = offsetVariable;
+                slice.ArrayVariable = arrayVariable;
+                slice.OffsetVariable = offsetVariable;
+            }     
         }
 
         public IEnumerable<SliceParameters> LocateIntermediateInjectionPoints(MethodDefinition method, TypeDefinition typeToFind)
