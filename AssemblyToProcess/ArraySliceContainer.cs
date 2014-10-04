@@ -160,10 +160,10 @@ namespace AssemblyToProcess
         }
 
 
-        public void MultipleParameters(ArraySlice<float> getParameter, ArraySlice<float> setParameter)
-        {
-            //for (int i = 0; i < 4; i++)
-            //    setParameter[i] = getParameter[i];
-        }
+        //public void MultipleParameters(ArraySlice<float> getParameter, ArraySlice<float> setParameter)
+        //{
+        //    for (int i = 0; i < 4; i++)
+        //        setParameter[i] = getParameter[i];
+        //}
     }
 }

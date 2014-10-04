@@ -18,8 +18,13 @@ namespace ArraySliceAddin.Fody
             }
         }
 
-        public static void Append(this Collection<Instruction> collection, params Instruction[] instructions)
+        public static void Prepend(this ILProcessor processor, params Instruction[] instructions)
         {
+            processor.Body.Instructions.Prepend(instructions);            
+        }
+
+        public static void Append(this Collection<Instruction> collection, params Instruction[] instructions)
+        {          
             for (var index = 0; index < instructions.Length; index++)
             {
                 collection.Insert(index, instructions[index]);
@@ -35,6 +40,10 @@ namespace ArraySliceAddin.Fody
                 index++;
             }
         }
+        public static void BeforeLast(this ILProcessor processor, params Instruction[] instructions)
+        {
+            processor.Body.Instructions.BeforeLast(instructions);   
+        }
 
         public static int Insert(this Collection<Instruction> collection, int index, params Instruction[] instructions)
         {
@@ -43,6 +52,18 @@ namespace ArraySliceAddin.Fody
                 collection.Insert(index, instruction);
             }
             return index + instructions.Length;
+        }
+
+        public static void InsertAfter(this ILProcessor processor, Instruction src, params Instruction[] instructions)
+        {
+            foreach (var instruction in instructions.Reverse())
+                processor.InsertAfter(src, instruction);
+        }
+
+        public static void InsertBefore(this ILProcessor processor, Instruction src, params Instruction[] instructions)
+        {
+            foreach (var instruction in instructions.Reverse())
+                processor.InsertBefore(src, instruction);
         }
     }
 }

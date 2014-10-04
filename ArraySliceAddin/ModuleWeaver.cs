@@ -35,7 +35,7 @@ namespace ArraySliceAddin.Fody
 
             public string SliceName { get; private set; }
 
-            public int IlOffset { get; private set; }
+            public Instruction Instruction { get; set; }
 
             public VariableDefinition ArrayVariable { get; set; }
             public VariableDefinition OffsetVariable { get; set; }
@@ -63,24 +63,22 @@ namespace ArraySliceAddin.Fody
 
             private int uniqueId;
 
-            public SliceParameters(ParameterDefinition definition, int offset = -1)
+            public SliceParameters(ParameterDefinition definition, Instruction instruction = null)
             {
                 this.Definition = definition;
 
                 SliceName = "byname" + definition.Name + "_";
-                IlOffset = offset;
-
                 uniqueId = generator.Value.Next(10000);
 
                 var variableSliceType = (GenericInstanceType)definition.ParameterType;
                 GenericArgument = variableSliceType.GenericArguments[0];
             }
 
-            public SliceParameters(VariableDefinition definition, int offset = -1)
+            public SliceParameters(VariableDefinition definition, Instruction instruction)
             {
                 this.Definition = definition;
                 SliceName = "byidx" + definition.Index + "_";
-                IlOffset = offset;
+                this.Instruction = instruction;
 
                 uniqueId = generator.Value.Next(10000);
 
@@ -105,7 +103,7 @@ namespace ArraySliceAddin.Fody
                 IntroduceIntermediateVariables(method, occurrences);
                 ReplaceIndexersCalls(method, occurrences);
 
-                //method.Body.OptimizeMacros();
+                method.Body.OptimizeMacros();
             }
         }
 
@@ -116,10 +114,11 @@ namespace ArraySliceAddin.Fody
         }
 
         public void ReplaceIndexersCalls(MethodDefinition method, IList<SliceParameters> slices)
-        {           
-            var instructions = method.Body.Instructions;
+        {
+            var processor = method.Body.GetILProcessor();
+            var instructions = processor.Body.Instructions;
 
-            foreach ( var slice in slices.Take(1) )
+            foreach ( var slice in slices )
             {
                 var arraySliceType = ModuleDefinition.Import(typeof(ArraySlice<>)).MakeGenericInstanceType(slice.GenericArgument);
 
@@ -163,12 +162,13 @@ namespace ArraySliceAddin.Fody
                         // 2    ldelem.r4                    $ Use standard ldelem with type to get the value from the array.
                         // =    stloc.s t                    $ Do whatever with the result of the GET call   
 
-                        int objectToCallIndex = instructions.IndexOf(objectToCall);
-                        int parameterIndex = instructions.IndexOf(parameter);
-
-                        instructions[objectToCallIndex] = Instruction.Create(OpCodes.Ldloc, slice.ArrayVariable);
+                        //HACK: We rewrite it to avoid killing the loop.
+                        objectToCall.OpCode = OpCodes.Ldloc;
+                        objectToCall.Operand = slice.ArrayVariable;
+                        
                         instructions[offset] = Instruction.Create(OpCodes.Ldelem_Any, slice.GenericArgument);
-                        instructions.Insert(parameterIndex + 1, new[] { 
+
+                        processor.InsertAfter(parameter, new[] { 
                                 Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
                                 Instruction.Create( OpCodes.Add )                                
                         });
@@ -193,12 +193,13 @@ namespace ArraySliceAddin.Fody
                         // =		ldc.r4 2		    $ Push the value to set. Use standard ldc with type and check if it  is optimized afterwards.
                         // 2		stelem   		    $ Use standard stelem with type and check if it is optimized afterwards.
 
-                        int objectToCallIndex = instructions.IndexOf(objectToCall);
-                        int parameterIndex = instructions.IndexOf(parameter);
+                        //HACK: We rewrite it to avoid killing the loop.
+                        objectToCall.OpCode = OpCodes.Ldloc;
+                        objectToCall.Operand = slice.ArrayVariable;
 
-                        instructions[objectToCallIndex] = Instruction.Create(OpCodes.Ldloc, slice.ArrayVariable);
                         instructions[offset] = Instruction.Create(OpCodes.Stelem_Any, slice.GenericArgument);
-                        instructions.Insert(parameterIndex + 1, new[] { 
+                        
+                        processor.InsertAfter(parameter, new[] { 
                                 Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
                                 Instruction.Create( OpCodes.Add )                                
                         });
@@ -214,7 +215,7 @@ namespace ArraySliceAddin.Fody
         public void IntroduceIntermediateVariables(MethodDefinition method, IEnumerable<SliceParameters> slices)
         {
             var body = method.Body;
-            var instructions = body.Instructions;
+            var processor = body.GetILProcessor();           
 
             foreach ( var slice in slices )
             {
@@ -240,7 +241,10 @@ namespace ArraySliceAddin.Fody
                     Instruction.Create(OpCodes.Stloc, offsetVariable)
                 };
 
-                instructions.Insert(slice.IlOffset + 1, instructionsToAdd);
+                if (slice.IsVariable)
+                    processor.InsertAfter(slice.Instruction, instructionsToAdd);
+                else
+                    processor.Prepend(instructionsToAdd);
 
                 slice.ArrayVariable = arrayVariable;
                 slice.OffsetVariable = offsetVariable;
@@ -268,11 +272,10 @@ namespace ArraySliceAddin.Fody
                             // Get the index.
                             var locationIndex = ((ParameterDefinition)instruction.Operand).Index;
                             var parameter = method.Parameters[locationIndex];
-
                             if (parameter.ParameterType.Name != typeToFind.Name)
                                 continue;
 
-                            yield return new SliceParameters(parameter, i);
+                            yield return new SliceParameters(parameter, instruction);
                         }
                         break;
                     case Code.Stloc:
@@ -280,11 +283,10 @@ namespace ArraySliceAddin.Fody
                             // Get the index.
                             var locationIndex = ((VariableDefinition)instruction.Operand).Index;
                             var variable = method.Body.Variables[locationIndex];
-
                             if (variable.VariableType.Name != typeToFind.Name)
                                 continue;
 
-                            yield return new SliceParameters(variable, i);
+                            yield return new SliceParameters(variable, instruction);
                         }
                         break;
                     default: continue;
