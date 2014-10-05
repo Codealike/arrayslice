@@ -101,6 +101,10 @@ namespace ArraySliceAddin.Fody
                 occurrences.Reverse();
 
                 IntroduceIntermediateVariables(method, occurrences);
+
+                method.Body.OptimizeMacros();
+                method.Body.SimplifyMacros();
+
                 ReplaceIndexersCalls(method, occurrences);
 
                 method.Body.OptimizeMacros();
@@ -160,9 +164,9 @@ namespace ArraySliceAddin.Fody
 
                     //HACK: We rewrite it to avoid killing the loop.
                     objectToCall.OpCode = OpCodes.Ldloc;
-                    objectToCall.Operand = slice.ArrayVariable;
+                    objectToCall.Operand = slice.ArrayVariable;                    
 
-                    instructions[offset] = Instruction.Create(OpCodes.Ldelem_Any, slice.GenericArgument);
+                    processor.Replace(instruction, Instruction.Create(OpCodes.Ldelem_Any, slice.GenericArgument));
 
                     processor.InsertAfter(parameter, new[] { 
                                 Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
@@ -190,7 +194,7 @@ namespace ArraySliceAddin.Fody
                     objectToCall.OpCode = OpCodes.Ldloc;
                     objectToCall.Operand = slice.ArrayVariable;
 
-                    instructions[offset] = Instruction.Create(OpCodes.Stelem_Any, slice.GenericArgument);
+                    processor.Replace(instruction, Instruction.Create(OpCodes.Stelem_Any, slice.GenericArgument));
 
                     processor.InsertAfter(parameter, new[] { 
                                 Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
