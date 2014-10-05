@@ -118,97 +118,88 @@ namespace ArraySliceAddin.Fody
             var processor = method.Body.GetILProcessor();
             var instructions = processor.Body.Instructions;
 
-            foreach ( var slice in slices )
+            var slicesLookup = slices.ToLookup(x => x.Definition);
+
+            for (int offset = 0; offset < instructions.Count; offset++)
             {
+                var instruction = instructions[offset];
+                if (!instruction.OpCode.IsCall())
+                    continue;
+
+                var methodReference = instruction.Operand as MethodReference;
+                if (methodReference == null)
+                    continue;
+
+                if (methodReference.Name != "get_Item" && methodReference.Name != "set_Item")
+                    continue;                
+
+                var objectToCall = instruction.TraceBack(methodReference, 0);
+                var parameter = instruction.TraceBack(methodReference, -1);
+
+                var slice = slicesLookup[objectToCall.Operand].First();
                 var arraySliceType = ModuleDefinition.Import(typeof(ArraySlice<>)).MakeGenericInstanceType(slice.GenericArgument);
 
-                for (int offset = 0; offset < instructions.Count; offset++)
+                var methodDefinition = methodReference.Resolve();
+
+                // FIXME: We know we cannot process if anything happens between the push of the array slice and the final operation.
+                if (methodDefinition.IsGetter)
                 {
-                    var instruction = instructions[offset];
+                    // Original GET:
+                    // 1    ldarg.s segment              $ Push the object to call 
+                    // =    ldloc.1                      $ Push the parameter
+                    // 2    callvirt instance !0 class ArraySegment.ArraySlice`1<float32>::get_Item(int32)
+                    // =    stloc.s t                    $ Do whatever with the result of the GET call
 
-                    if (!instruction.OpCode.IsCall())
-                        continue;
+                    // Target GET:
+                    // 1    ldloc.s data                 $ Push the object to call  
+                    // =    ldloc.1                      $ Push the parameter
+                    // 2    ldloc.s offset
+                    // 2    add                          $ Add the parameter (i) and the offset. 
+                    // 2    ldelem.r4                    $ Use standard ldelem with type to get the value from the array.
+                    // =    stloc.s t                    $ Do whatever with the result of the GET call   
 
-                    var methodReference = instruction.Operand as MethodReference;
-                    if (methodReference == null)
-                        continue;
+                    //HACK: We rewrite it to avoid killing the loop.
+                    objectToCall.OpCode = OpCodes.Ldloc;
+                    objectToCall.Operand = slice.ArrayVariable;
 
-                    if (methodReference.Name != "get_Item" && methodReference.Name != "set_Item")
-                        continue;
+                    instructions[offset] = Instruction.Create(OpCodes.Ldelem_Any, slice.GenericArgument);
 
-                    var methodDefinition = methodReference.Resolve();
-
-                    var genericInstanceType = methodDefinition.DeclaringType;
-                    if (genericInstanceType.FullName != arraySliceType.ElementType.FullName)
-                        continue;
-
-                    // FIXME: We know we cannot process if anything happens between the push of the array slice and the final operation.
-                    if (methodDefinition.IsGetter)
-                    {
-                        var objectToCall = instruction.TraceBack(methodReference, 0);
-                        var parameter = instruction.TraceBack(methodReference, -1);
-
-                        // Original GET:
-                        // 1    ldarg.s segment              $ Push the object to call 
-                        // =    ldloc.1                      $ Push the parameter
-                        // 2    callvirt instance !0 class ArraySegment.ArraySlice`1<float32>::get_Item(int32)
-                        // =    stloc.s t                    $ Do whatever with the result of the GET call
-
-                        // Target GET:
-                        // 1    ldloc.s data                 $ Push the object to call  
-                        // =    ldloc.1                      $ Push the parameter
-                        // 2    ldloc.s offset
-                        // 2    add                          $ Add the parameter (i) and the offset. 
-                        // 2    ldelem.r4                    $ Use standard ldelem with type to get the value from the array.
-                        // =    stloc.s t                    $ Do whatever with the result of the GET call   
-
-                        //HACK: We rewrite it to avoid killing the loop.
-                        objectToCall.OpCode = OpCodes.Ldloc;
-                        objectToCall.Operand = slice.ArrayVariable;
-                        
-                        instructions[offset] = Instruction.Create(OpCodes.Ldelem_Any, slice.GenericArgument);
-
-                        processor.InsertAfter(parameter, new[] { 
+                    processor.InsertAfter(parameter, new[] { 
                                 Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
                                 Instruction.Create( OpCodes.Add )                                
                         });
-                    }
-                    else if (methodDefinition.IsSetter)
-                    {
-                        var objectToCall = instruction.TraceBack(methodReference, 0);
-                        var parameter = instruction.TraceBack(methodReference, -1);
-
-                        // Original SET:
-                        // 1		ldarg segment	    $ Push the object to call 
-                        // =		ldloc.0		        $ Push the parameter
-                        // =		ldc.r4 2		    $ Push the value to set
-                        // 2		callvirt instance void class ArraySegment.ArraySlice`1<float32>::set_Item(int32, !0)
-                        // -        nop			        $ Check if it even exists after SimplifyMacros in the collection.
-
-                        // Target SET
-                        // 1		ldloc data		    $ Push the array
-                        // =		ldloc.0		        $ Push the parameter
-                        // 2		ldloc offset		
-                        // 2		add      		    $ Add the parameter (i) and the offset. 
-                        // =		ldc.r4 2		    $ Push the value to set. Use standard ldc with type and check if it  is optimized afterwards.
-                        // 2		stelem   		    $ Use standard stelem with type and check if it is optimized afterwards.
-
-                        //HACK: We rewrite it to avoid killing the loop.
-                        objectToCall.OpCode = OpCodes.Ldloc;
-                        objectToCall.Operand = slice.ArrayVariable;
-
-                        instructions[offset] = Instruction.Create(OpCodes.Stelem_Any, slice.GenericArgument);
-                        
-                        processor.InsertAfter(parameter, new[] { 
-                                Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
-                                Instruction.Create( OpCodes.Add )                                
-                        });
-
-                    }
-                    else continue;
                 }
-            }
+                else if (methodDefinition.IsSetter)
+                {
+                    // Original SET:
+                    // 1		ldarg segment	    $ Push the object to call 
+                    // =		ldloc.0		        $ Push the parameter
+                    // =		ldc.r4 2		    $ Push the value to set
+                    // 2		callvirt instance void class ArraySegment.ArraySlice`1<float32>::set_Item(int32, !0)
+                    // -        nop			        $ Check if it even exists after SimplifyMacros in the collection.
 
+                    // Target SET
+                    // 1		ldloc data		    $ Push the array
+                    // =		ldloc.0		        $ Push the parameter
+                    // 2		ldloc offset		
+                    // 2		add      		    $ Add the parameter (i) and the offset. 
+                    // =		ldc.r4 2		    $ Push the value to set. Use standard ldc with type and check if it  is optimized afterwards.
+                    // 2		stelem   		    $ Use standard stelem with type and check if it is optimized afterwards.
+
+                    //HACK: We rewrite it to avoid killing the loop.
+                    objectToCall.OpCode = OpCodes.Ldloc;
+                    objectToCall.Operand = slice.ArrayVariable;
+
+                    instructions[offset] = Instruction.Create(OpCodes.Stelem_Any, slice.GenericArgument);
+
+                    processor.InsertAfter(parameter, new[] { 
+                                Instruction.Create( OpCodes.Ldloc, slice.OffsetVariable ),
+                                Instruction.Create( OpCodes.Add )                                
+                        });
+
+                }
+                else continue;
+            }
 
         }
 
