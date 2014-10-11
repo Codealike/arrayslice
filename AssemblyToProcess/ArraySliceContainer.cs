@@ -71,7 +71,7 @@ namespace AssemblyToProcess
             int offset = 10;
             var data = InitializeData();
 
-            var segment = new ArraySlice<float>(data, offset, 5);
+            var segment = new ArraySlice<float>(data, offset, 5);            
 
             float t;
             for (int i = 0; i < 4; i++)
@@ -163,6 +163,13 @@ namespace AssemblyToProcess
         {
             for (int i = 0; i < 4; i++)
                 setParameter[i] = getParameter[i];
+        }
+
+        public void TryImplicitCast ()
+        {
+            var getData = InitializeData<float>();
+            var setData = InitializeData<float>();
+            MultipleParameters(getData, setData);
         }
     }
 }

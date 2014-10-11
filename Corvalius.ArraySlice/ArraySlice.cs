@@ -1,16 +1,22 @@
-﻿using System;
+﻿using Corvalius.ArraySlice;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace System
 {
-    public sealed class ArraySlice<T> 
+    public sealed class ArraySlice<T> : IHideObjectMembers
     {
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly int Offset;
-        public readonly int Count;
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly T[] Array;
+
+        public readonly int Count;
 
         public ArraySlice(T[] array)
         {
@@ -80,11 +86,18 @@ namespace System
             }
         }
 
+        public static implicit operator ArraySlice<T> ( T[] src )
+        {
+            return new ArraySlice<T>(src);
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public int GetOffset()
         {
             return this.Offset;
         }
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public T[] GetArray()
         {
             return this.Array;

@@ -45,7 +45,7 @@ public class WeaverTests
         var typeToFind = DefinitionFinder.FindType(typeof(ArraySlice<>));
         var methods = weavingTask.FindMethodsUsingArraySlices(typeToFind);
 
-        Assert.AreEqual(1, methods.Count());
+        Assert.AreEqual(0, methods.Count());
 
         var type = assembly.GetType("ArraySliceContainer");
     }
