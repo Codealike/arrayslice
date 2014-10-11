@@ -139,8 +139,11 @@ namespace ArraySliceAddin.Fody
 
                 var objectToCall = instruction.TraceBack(methodReference, 0);
                 var parameter = instruction.TraceBack(methodReference, -1);
+                
+                var slice = slicesLookup[objectToCall.Operand].FirstOrDefault();
+                if (slice == null)
+                    continue;
 
-                var slice = slicesLookup[objectToCall.Operand].First();
                 var arraySliceType = ModuleDefinition.Import(typeof(ArraySlice<>)).MakeGenericInstanceType(slice.GenericArgument);
 
                 var methodDefinition = methodReference.Resolve();
