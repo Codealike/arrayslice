@@ -218,8 +218,8 @@ namespace ArraySliceAddin.Fody
             foreach ( var slice in slices )
             {
                 var arraySliceType = ModuleDefinition.Import(typeof(ArraySlice<>)).MakeGenericInstanceType(slice.GenericArgument);
-                var arrayGetMethod = ModuleDefinition.Import(arraySliceType.Resolve().Find("GetArray")).MakeHostInstanceGeneric(slice.GenericArgument);
-                var offsetGetMethod = ModuleDefinition.Import(arraySliceType.Resolve().Find("GetOffset")).MakeHostInstanceGeneric(slice.GenericArgument);
+                var arrayGetMethod = ModuleDefinition.Import(arraySliceType.Resolve().FindField("Array")).MakeHostInstanceGeneric(slice.GenericArgument);
+                var offsetGetMethod = ModuleDefinition.Import(arraySliceType.Resolve().FindField("Offset")).MakeHostInstanceGeneric(slice.GenericArgument);
 
                 var arrayTypeOfT = slice.GenericArgument.MakeArrayType();
 
@@ -232,10 +232,10 @@ namespace ArraySliceAddin.Fody
                 var instructionsToAdd = new Instruction[] 
                 {
                     slice.IsVariable ? Instruction.Create(OpCodes.Ldloc, (VariableDefinition)slice.Definition) : Instruction.Create(OpCodes.Ldarg, (ParameterDefinition)slice.Definition),
-                    Instruction.Create(OpCodes.Callvirt, arrayGetMethod),
+                    Instruction.Create(OpCodes.Ldfld, arrayGetMethod),
                     Instruction.Create(OpCodes.Stloc, arrayVariable),
                     slice.IsVariable ? Instruction.Create(OpCodes.Ldloc, (VariableDefinition)slice.Definition) : Instruction.Create(OpCodes.Ldarg, (ParameterDefinition)slice.Definition),
-                    Instruction.Create(OpCodes.Callvirt, offsetGetMethod),
+                    Instruction.Create(OpCodes.Ldfld, offsetGetMethod),
                     Instruction.Create(OpCodes.Stloc, offsetVariable)
                 };
 

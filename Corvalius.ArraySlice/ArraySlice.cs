@@ -91,16 +91,5 @@ namespace System
             return new ArraySlice<T>(src);
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public int GetOffset()
-        {
-            return this.Offset;
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public T[] GetArray()
-        {
-            return this.Array;
-        }
     }
 }

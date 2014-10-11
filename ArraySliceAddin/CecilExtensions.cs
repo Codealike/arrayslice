@@ -23,13 +23,25 @@ namespace ArraySliceAddin.Fody
             return opCode == OpCodes.Newobj;
         }
 
-        public static MethodDefinition Find(this TypeDefinition typeReference, string name, params string[] paramTypes)
+        public static MethodDefinition FindMethod(this TypeDefinition typeReference, string name, params string[] paramTypes)
         {
             foreach (var method in typeReference.Methods)
             {
                 if (method.IsMatch(name, paramTypes))
                 {
                     return method;
+                }
+            }
+            throw new WeavingException(string.Format("Could not find '{0}' on '{1}'", name, typeReference.Name));
+        }
+
+        public static FieldDefinition FindField(this TypeDefinition typeReference, string name, params string[] paramTypes)
+        {
+            foreach (var field in typeReference.Fields)
+            {
+                if (field.IsMatch(name, paramTypes))
+                {
+                    return field;
                 }
             }
             throw new WeavingException(string.Format("Could not find '{0}' on '{1}'", name, typeReference.Name));
@@ -57,8 +69,16 @@ namespace ArraySliceAddin.Fody
             return true;
         }
 
-        public static MethodReference MakeHostInstanceGeneric( this MethodReference self, params TypeReference[] args)
-        {            
+        public static bool IsMatch(this FieldReference field, string name, params string[] paramTypes)
+        {
+            if (field.Name != name)
+                return false;
+
+            return true;
+        }
+
+        public static MethodReference MakeHostInstanceGeneric(this MethodReference self, params TypeReference[] args)
+        {
             var reference = new MethodReference(
                 self.Name,
                 self.ReturnType,
@@ -78,6 +98,17 @@ namespace ArraySliceAddin.Fody
             {
                 reference.GenericParameters.Add(new GenericParameter(genericParam.Name, reference));
             }
+
+            return reference;
+        }
+
+        public static FieldReference MakeHostInstanceGeneric(this FieldReference self, params TypeReference[] args)
+        {
+            var reference = new FieldReference(
+                self.Name,
+                self.FieldType,
+                self.DeclaringType.MakeGenericInstanceType(args))
+            {};
 
             return reference;
         }
