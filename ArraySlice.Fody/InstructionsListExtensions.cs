@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ArraySliceAddin.Fody
+namespace Corvalius.ArraySlice.Fody
 {
     public static class InstructionListExtensions
     {

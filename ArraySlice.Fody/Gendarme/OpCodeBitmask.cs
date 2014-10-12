@@ -33,7 +33,7 @@ using System.Text;
 
 using Mono.Cecil.Cil;
 
-namespace ArraySliceAddin.Fody.Gendarme
+namespace Corvalius.ArraySlice.Fody.Gendarme
 {
     /// <summary>
     /// This is a specialized Bitmask class for the Code enumeration. 

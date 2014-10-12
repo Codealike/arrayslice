@@ -36,7 +36,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ArraySliceAddin.Fody.Gendarme
+namespace Corvalius.ArraySlice.Fody.Gendarme
 {
     // add Type[Definition|Reference] extensions methods here
     // only if:

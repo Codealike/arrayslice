@@ -35,7 +35,7 @@ using System.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-namespace ArraySliceAddin.Fody.Gendarme
+namespace Corvalius.ArraySlice.Fody.Gendarme
 {
     // add Instruction extensions methods here
     // only if:

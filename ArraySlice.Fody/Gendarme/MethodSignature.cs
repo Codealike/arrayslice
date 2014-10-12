@@ -35,7 +35,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 
-namespace ArraySliceAddin.Fody.Gendarme
+namespace Corvalius.ArraySlice.Fody.Gendarme
 {
     /// <summary>
     /// Used to match methods. Properties that are set to null are ignored

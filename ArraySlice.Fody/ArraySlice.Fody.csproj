@@ -8,8 +8,8 @@
     <ProjectGuid>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ArraySliceAddin.Fody</RootNamespace>
-    <AssemblyName>ArraySliceAddin.Fody</AssemblyName>
+    <RootNamespace>Corvalius.ArraySlice.Fody</RootNamespace>
+    <AssemblyName>ArraySlice.Fody</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -78,12 +78,15 @@
     <Compile Include="WeavingException.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Corvalius.ArraySlice\Corvalius.ArraySlice.csproj">
-      <Project>{90bc2afe-be28-4827-9484-74fb4940c552}</Project>
-      <Name>Corvalius.ArraySlice</Name>
+    <ProjectReference Include="..\Corvalius.ArraySlice.40\Corvalius.ArraySlice.Net40.csproj">
+      <Project>{567c610b-ec50-4222-a6b9-81a76b62b5f9}</Project>
+      <Name>Corvalius.ArraySlice.Net40</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

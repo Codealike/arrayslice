@@ -31,7 +31,7 @@ using System.Text;
 
 using Mono.Cecil;
 
-namespace ArraySliceAddin.Fody.Gendarme
+namespace Corvalius.ArraySlice.Fody.Gendarme
 {
     // add CustomAttribute[Collection], ICustomAttributeProvider extensions 
     // methods here only if:

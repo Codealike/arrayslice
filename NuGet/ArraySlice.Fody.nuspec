@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata minClientVersion="2.5">
+    <id>ArraySlice.Fody</id>
+    <version>$version$</version>
+    <title>ArraySlice performance optimizer.</title>
+    <authors>Federico Lois - Corvalius</authors>
+    <owners>Federico Lois- Corvalius</owners>
+    <developmentDependency>false</developmentDependency>
+    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <projectUrl>http://github.com/redknightlois/ArraySliceFodyAddin</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Array Slice allows to build memory shared arrays with the same syntax as an array and still retain the performance of using raw arrays. We modify the IL to make sure you can squeeze all the performance that it is available to you.</description>
+    <summary />
+    <language>en-EU</language>
+    <references>
+      <!--<group targetFramework="net45">
+        <reference file="Lib\net45\Corvalius.ArraySlice.dll" />
+      </group>
+      <group targetFramework="net40">
+        <reference file="Lib\net40\Corvalius.ArraySlice.dll" />
+      </group>-->
+      <!--<group>
+        <reference file="Lib\portable\Corvalius.ArraySlice.dll" />
+      </group>-->
+
+    </references>
+    <files>
+      <file src="Lib\net45\Corvalius.ArraySlice.dll" />
+      <file src="Lib\net40\Corvalius.ArraySlice.dll" />
+      <file src="Lib\portable\Corvalius.ArraySlice.dll"/>
+    </files>
+
+    <tags>ILWeaving, Fody, Cecil, Arrays</tags>
+    <dependencies>
+      <dependency id="Fody"/>
+    </dependencies>
+  </metadata>
+</package>

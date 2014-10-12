@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace ArraySliceAddin.Fody
+namespace Corvalius.ArraySlice.Fody
 {
     public static class DefinitionFinder
     {

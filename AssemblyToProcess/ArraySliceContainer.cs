@@ -4,6 +4,22 @@ namespace AssemblyToProcess
 {
     public class ArraySliceContainer
     {
+        private ArraySlice<float> FieldSegment;
+        private ArraySlice<float> AnotherFieldSegment;
+
+        public ArraySliceContainer()
+        {
+            int offset = 10;
+            var data = InitializeData();
+
+            int offset2 = 10;
+            var data2 = InitializeData();
+
+            FieldSegment = new ArraySlice<float>(data, offset, 5);
+            AnotherFieldSegment = new ArraySlice<float>(data2, offset2, 5);
+        }
+
+
         private static float[] InitializeData()
         {
             float[] data = new float[100];
@@ -71,7 +87,8 @@ namespace AssemblyToProcess
             int offset = 10;
             var data = InitializeData();
 
-            var segment = new ArraySlice<float>(data, offset, 5);            
+            var segment = new ArraySlice<float>(data, offset, 5);
+            
 
             float t;
             for (int i = 0; i < 4; i++)
@@ -170,6 +187,56 @@ namespace AssemblyToProcess
             var getData = InitializeData<float>();
             var setData = InitializeData<float>();
             MultipleParameters(getData, setData);
+        }
+
+        public void UseFields()
+        {
+            var segmentAlias = FieldSegment;
+
+            float t;
+            for (int i = 0; i < 4; i++)
+            {
+                segmentAlias[i] = 2;
+                for (int j = 0; j < 4; j++)
+                    t = segmentAlias[j];
+            }
+        }
+
+        public void FieldAliasing ()
+        {
+            var segmentAlias = FieldSegment;
+
+            float t;
+            for (int i = 0; i < 4; i++)
+            {
+                segmentAlias[i] = 2;
+                for (int j = 0; j < 4; j++)
+                    t = segmentAlias[j];
+            }
+        }
+
+        public void PassthroughFieldWithInnerUse()
+        {
+            var segmentAlias = FieldSegment;
+
+            AccessAsParameter(FieldSegment);
+
+            float t;
+            for (int i = 0; i < 4; i++)
+            {
+                segmentAlias[i] = 2;
+                for (int j = 0; j < 4; j++)
+                    t = segmentAlias[j];
+            }
+        }
+
+        public void MultipleFields()
+        {
+            var segmentAlias = FieldSegment;
+            var anotherSegmentAlias = AnotherFieldSegment;
+
+            for (int i = 0; i < 4; i++)
+                anotherSegmentAlias[i] = segmentAlias[i];
         }
     }
 }

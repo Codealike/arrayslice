@@ -4,51 +4,53 @@ using System.Reflection;
 using System.Linq;
 using Mono.Cecil;
 using NUnit.Framework;
-using ArraySliceAddin.Fody;
+using Corvalius.ArraySlice.Fody;
 
-[TestFixture]
-public class WeaverTests
+namespace Corvalius.ArraySlice.Tests
 {
-    Assembly assembly;
-    string newAssemblyPath;
-    string assemblyPath;
-
-    ModuleWeaver weavingTask;
-
-    [TestFixtureSetUp]
-    public void Setup()
+    [TestFixture]
+    public class WeaverTests
     {
-        var projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\AssemblyToProcess\AssemblyToProcess.csproj"));
-        assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), @"bin\Debug\AssemblyToProcess.dll");
+        Assembly assembly;
+        string newAssemblyPath;
+        string assemblyPath;
+
+        ModuleWeaver weavingTask;
+
+        [TestFixtureSetUp]
+        public void Setup()
+        {
+            var projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\AssemblyToProcess\AssemblyToProcess.csproj"));
+            assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), @"bin\Debug\AssemblyToProcess.dll");
 #if (!DEBUG)
-        assemblyPath = assemblyPath.Replace("Debug", "Release");
+            assemblyPath = assemblyPath.Replace("Debug", "Release");
 #endif
 
-        newAssemblyPath = assemblyPath.Replace(".dll", "2.dll");
-        File.Copy(assemblyPath, newAssemblyPath, true);
+            newAssemblyPath = assemblyPath.Replace(".dll", "2.dll");
+            File.Copy(assemblyPath, newAssemblyPath, true);
 
-        var moduleDefinition = ModuleDefinition.ReadModule(newAssemblyPath);
-        weavingTask = new ModuleWeaver
+            var moduleDefinition = ModuleDefinition.ReadModule(newAssemblyPath);
+            weavingTask = new ModuleWeaver
+            {
+                ModuleDefinition = moduleDefinition
+            };
+
+            weavingTask.Execute();
+            moduleDefinition.Write(newAssemblyPath);
+
+            assembly = Assembly.LoadFile(newAssemblyPath);
+        }
+
+        [Test]
+        public void ValidateFindMethodsThatUsesArraySlicesInBody()
         {
-            ModuleDefinition = moduleDefinition
-        };
+            var typeToFind = DefinitionFinder.FindType(typeof(ArraySlice<>));
+            var methods = weavingTask.FindMethodsUsingArraySlices(typeToFind);
 
-        weavingTask.Execute();
-        moduleDefinition.Write(newAssemblyPath);
+            Assert.AreEqual(0, methods.Count());
 
-        assembly = Assembly.LoadFile(newAssemblyPath);
-    }
-
-    [Test]
-    public void ValidateFindMethodsThatUsesArraySlicesInBody()
-    {
-        var typeToFind = DefinitionFinder.FindType(typeof(ArraySlice<>));
-        var methods = weavingTask.FindMethodsUsingArraySlices(typeToFind);
-
-        Assert.AreEqual(0, methods.Count());
-
-        var type = assembly.GetType("ArraySliceContainer");
-    }
+            var type = assembly.GetType("ArraySliceContainer");
+        }
 
 #if(DEBUG)
     [Test]
@@ -57,4 +59,6 @@ public class WeaverTests
         Verifier.Verify(assemblyPath,newAssemblyPath);
     }
 #endif
+    }
+
 }

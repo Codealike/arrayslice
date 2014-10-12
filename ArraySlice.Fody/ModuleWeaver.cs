@@ -4,10 +4,9 @@ using Mono.Cecil;
 using Mono.Cecil.Rocks;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
-using ArraySliceAddin.Fody;
-using ArraySliceAddin.Fody.Gendarme;
+using Corvalius.ArraySlice.Fody.Gendarme;
 
-namespace ArraySliceAddin.Fody
+namespace Corvalius.ArraySlice.Fody
 {
     public class ModuleWeaver
     {

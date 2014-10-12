@@ -32,7 +32,7 @@ using System.Text;
 
 using Mono.Cecil;
 
-namespace ArraySliceAddin.Fody.Gendarme
+namespace Corvalius.ArraySlice.Fody.Gendarme
 {
     /// <summary>
     /// Namespaces do not really exists in the CLR, at least not like other first level citizens.

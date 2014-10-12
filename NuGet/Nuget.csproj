@@ -4,6 +4,8 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{63786CE5-D899-43DF-AD4E-C2CA3BAC3FC2}</ProjectGuid>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <ConfigurationName>Debug</ConfigurationName>
@@ -11,8 +13,15 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <ConfigurationName>Release</ConfigurationName>
   </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
-    <None Include="ArraySliceAddin.nuspec">
+    <None Include="app.config" />
+    <None Include="ArraySlice.Fody.nuspec">
       <SubType>Designer</SubType>
     </None>
     <None Include="install.ps1" />
@@ -27,18 +36,21 @@
   <Target Name="ReBuild" DependsOnTargets="NuGetBuild" />
   <Target Name="NuGetBuild" DependsOnTargets="Clean">
     <MakeDir Directories="$(SolutionDir)NuGetBuild" />
-    <Copy SourceFiles="$(SolutionDir)NuGet\ArraySliceAddin.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
-    <Copy SourceFiles="$(SolutionDir)ArraySliceAddin\bin\$(ConfigurationName)\ArraySliceAddin.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    <Copy SourceFiles="$(SolutionDir)NuGet\ArraySlice.Fody.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    <Copy SourceFiles="$(SolutionDir)ArraySlice.Fody\bin\$(ConfigurationName)\ArraySlice.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable" />
+    <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.40\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\net40" />
+    <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.45\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\net45" />
     <Copy SourceFiles="$(SolutionDir)NuGet\Fody_ToBeDeleted.txt" DestinationFolder="$(SolutionDir)NuGetBuild\Content" />
     <Copy SourceFiles="$(ProjectDir)install.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
     <Copy SourceFiles="$(ProjectDir)uninstall.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
-    <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)ArraySliceAddin\bin\$(ConfigurationName)\ArraySliceAddin.Fody.dll" />
+    <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)ArraySlice.Fody\bin\$(ConfigurationName)\ArraySlice.Fody.dll" />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\ArraySliceAddin\ArraySliceAddin.csproj">
+    <ProjectReference Include="..\ArraySlice.Fody\ArraySlice.Fody.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
-      <Name>ArraySliceAddin</Name>
+      <Name>ArraySlice.Fody</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\packages\PepitaPackage.1.20.0.0\build\PepitaPackage.targets" Condition="Exists('..\packages\PepitaPackage.1.20.0.0\build\PepitaPackage.targets')" />

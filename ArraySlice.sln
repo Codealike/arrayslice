@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArraySliceAddin", "ArraySliceAddin\ArraySliceAddin.csproj", "{C3578A7B-09A6-4444-9383-0DEAFA4958BD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArraySlice.Fody", "ArraySlice.Fody\ArraySlice.Fody.csproj", "{C3578A7B-09A6-4444-9383-0DEAFA4958BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{5A86453B-96FB-4B6E-A283-225BB9F753D3}"
 EndProject
@@ -14,9 +14,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nuget", "NuGet\Nuget.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcess", "AssemblyToProcess\AssemblyToProcess.csproj", "{E97E649F-B703-47E3-B18A-0871D3498742}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Corvalius.ArraySlice", "Corvalius.ArraySlice\Corvalius.ArraySlice.csproj", "{90BC2AFE-BE28-4827-9484-74FB4940C552}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Corvalius.ArraySlice.Portable", "Corvalius.ArraySlice\Corvalius.ArraySlice.Portable.csproj", "{90BC2AFE-BE28-4827-9484-74FB4940C552}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{AF698659-EBA3-406B-B377-251F38955C2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Corvalius.ArraySlice.Net40", "Corvalius.ArraySlice.40\Corvalius.ArraySlice.Net40.csproj", "{567C610B-EC50-4222-A6B9-81A76B62B5F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Corvalius.ArraySlice.Net45", "Corvalius.ArraySlice.45\Corvalius.ArraySlice.Net45.csproj", "{D7AEB4B3-51A1-42F9-83A4-66C9018921BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +60,18 @@ Global
 		{90BC2AFE-BE28-4827-9484-74FB4940C552}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90BC2AFE-BE28-4827-9484-74FB4940C552}.Release|Any CPU.Build.0 = Release|Any CPU
 		{90BC2AFE-BE28-4827-9484-74FB4940C552}.Release|x86.ActiveCfg = Release|Any CPU
+		{567C610B-EC50-4222-A6B9-81A76B62B5F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{567C610B-EC50-4222-A6B9-81A76B62B5F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{567C610B-EC50-4222-A6B9-81A76B62B5F9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{567C610B-EC50-4222-A6B9-81A76B62B5F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{567C610B-EC50-4222-A6B9-81A76B62B5F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{567C610B-EC50-4222-A6B9-81A76B62B5F9}.Release|x86.ActiveCfg = Release|Any CPU
+		{D7AEB4B3-51A1-42F9-83A4-66C9018921BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7AEB4B3-51A1-42F9-83A4-66C9018921BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7AEB4B3-51A1-42F9-83A4-66C9018921BB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D7AEB4B3-51A1-42F9-83A4-66C9018921BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7AEB4B3-51A1-42F9-83A4-66C9018921BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7AEB4B3-51A1-42F9-83A4-66C9018921BB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

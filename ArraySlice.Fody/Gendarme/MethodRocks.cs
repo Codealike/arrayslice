@@ -39,7 +39,7 @@ using System.Text;
 
 using Mono.Cecil;
 
-namespace ArraySliceAddin.Fody.Gendarme
+namespace Corvalius.ArraySlice.Fody.Gendarme
 {
     // add Method[Reference|Definition][Collection] extensions methods here
     // only if:
