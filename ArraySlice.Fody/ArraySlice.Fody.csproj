@@ -83,10 +83,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Corvalius.ArraySlice.40\Corvalius.ArraySlice.Net40.csproj">
-      <Project>{567c610b-ec50-4222-a6b9-81a76b62b5f9}</Project>
-      <Name>Corvalius.ArraySlice.Net40</Name>
-      <Private>False</Private>
+    <ProjectReference Include="..\Corvalius.ArraySlice\Corvalius.ArraySlice.Portable.csproj">
+      <Project>{90bc2afe-be28-4827-9484-74fb4940c552}</Project>
+      <Name>Corvalius.ArraySlice.Portable</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

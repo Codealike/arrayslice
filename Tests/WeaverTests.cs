@@ -5,6 +5,7 @@ using System.Linq;
 using Mono.Cecil;
 using NUnit.Framework;
 using Corvalius.ArraySlice.Fody;
+using Tests;
 
 namespace Corvalius.ArraySlice.Tests
 {
@@ -32,7 +33,8 @@ namespace Corvalius.ArraySlice.Tests
             var moduleDefinition = ModuleDefinition.ReadModule(newAssemblyPath);
             weavingTask = new ModuleWeaver
             {
-                ModuleDefinition = moduleDefinition
+                ModuleDefinition = moduleDefinition,
+                AssemblyResolver = new MockAssemblyResolver()
             };
 
             weavingTask.Execute();

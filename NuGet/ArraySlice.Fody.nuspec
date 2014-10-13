@@ -6,25 +6,14 @@
     <title>ArraySlice performance optimizer.</title>
     <authors>Federico Lois - Corvalius</authors>
     <owners>Federico Lois- Corvalius</owners>
-    <developmentDependency>false</developmentDependency>
+    <developmentDependency>true</developmentDependency>
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
     <projectUrl>http://github.com/redknightlois/ArraySliceFodyAddin</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Array Slice allows to build memory shared arrays with the same syntax as an array and still retain the performance of using raw arrays. We modify the IL to make sure you can squeeze all the performance that it is available to you.</description>
     <summary />
     <language>en-EU</language>
-    <references>
-      <!--<group targetFramework="net45">
-        <reference file="Lib\net45\Corvalius.ArraySlice.dll" />
-      </group>
-      <group targetFramework="net40">
-        <reference file="Lib\net40\Corvalius.ArraySlice.dll" />
-      </group>-->
-      <!--<group>
-        <reference file="Lib\portable\Corvalius.ArraySlice.dll" />
-      </group>-->
 
-    </references>
     <files>
       <file src="Lib\net45\Corvalius.ArraySlice.dll" />
       <file src="Lib\net40\Corvalius.ArraySlice.dll" />

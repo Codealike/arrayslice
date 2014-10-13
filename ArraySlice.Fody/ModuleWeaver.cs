@@ -5,6 +5,8 @@ using Mono.Cecil.Rocks;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using Corvalius.ArraySlice.Fody.Gendarme;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Corvalius.ArraySlice.Fody
 {
@@ -12,14 +14,23 @@ namespace Corvalius.ArraySlice.Fody
     {
         // Will log an informational message to MSBuild
         public Action<string> LogInfo { get; set; }
+        public Action<string> LogWarning { get; set; }
+        public Action<string> LogError { get; set; }
 
         // An instance of Mono.Cecil.ModuleDefinition for processing
         public ModuleDefinition ModuleDefinition { get; set; }
+
+        public IAssemblyResolver AssemblyResolver { get; set; }
+
+
+
 
         // Init logging delegates to make testing easier
         public ModuleWeaver()
         {
             LogInfo = m => { };
+            LogWarning = s => { };
+            LogError = s => { };
         }
 
         public class SliceParameters
@@ -88,25 +99,52 @@ namespace Corvalius.ArraySlice.Fody
 
         public void Execute()
         {
-            var typeToFind = DefinitionFinder.FindType(typeof(ArraySlice<>));
-
-            var methodsToProcess = FindMethodsUsingArraySlices(typeToFind);
-            foreach (var method in methodsToProcess)
+            try
             {
-                method.Body.SimplifyMacros();
 
-                var occurrences = LocateIntermediateInjectionPoints(method, typeToFind).ToList();
-                occurrences = PruneUnusedInjectionPoints(method, typeToFind, occurrences).ToList();
-                occurrences.Reverse();
+                var assemblyRef = ModuleDefinition.AssemblyReferences.FirstOrDefault(x => x.Name == "Corvalius.ArraySlice");
+                if (assemblyRef == null)
+                    return;
 
-                IntroduceIntermediateVariables(method, occurrences);
+                var assemblyDefinition = AssemblyResolver.Resolve(assemblyRef);
+                if (assemblyDefinition == null)
+                {
+                    LogError("Cannot resolve the Corvalius.ArraySlice assembly.");
+                    return;
+                }                    
 
-                method.Body.OptimizeMacros();
-                method.Body.SimplifyMacros();
+                var typeToFind = assemblyDefinition.MainModule.Types.FirstOrDefault(x => x.Name == "ArraySlice`1");
+                if ( typeToFind == null )
+                {
+                    LogError("Cannot find an instance of ArraySlice<T> in the referenced assembly '" + assemblyDefinition.Name + "'.");
+                    return;
+                }
 
-                ReplaceIndexersCalls(method, occurrences);
+                var methodsToProcess = FindMethodsUsingArraySlices(typeToFind);
+                foreach (var method in methodsToProcess)
+                {
+                    method.Body.SimplifyMacros();
 
-                method.Body.OptimizeMacros();
+                    var occurrences = LocateIntermediateInjectionPoints(method, typeToFind).ToList();
+                    occurrences = PruneUnusedInjectionPoints(method, typeToFind, occurrences).ToList();
+                    occurrences.Reverse();
+
+                    IntroduceIntermediateVariables(method, occurrences);
+
+                    method.Body.OptimizeMacros();
+                    method.Body.SimplifyMacros();
+
+                    ReplaceIndexersCalls(method, occurrences);
+
+                    method.Body.OptimizeMacros();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex.Message);
+//#if DEBUG
+//                Debugger.Launch();
+//#endif
             }
         }
 
