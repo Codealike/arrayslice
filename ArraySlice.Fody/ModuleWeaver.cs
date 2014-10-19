@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Corvalius.ArraySlice.Fody.Gendarme;
 using System.Diagnostics;
 using System.Reflection;
+using System.IO;
 
 namespace Corvalius.ArraySlice.Fody
 {
@@ -22,7 +23,7 @@ namespace Corvalius.ArraySlice.Fody
 
         public IAssemblyResolver AssemblyResolver { get; set; }
 
-
+        public string AddinDirectoryPath { get; set; }
 
 
         // Init logging delegates to make testing easier
@@ -99,13 +100,14 @@ namespace Corvalius.ArraySlice.Fody
 
         public void Execute()
         {
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
+
             try
             {
-
                 var assemblyRef = ModuleDefinition.AssemblyReferences.FirstOrDefault(x => x.Name == "Corvalius.ArraySlice");
                 if (assemblyRef == null)
-                    return;
-
+                    return;                   
+                
                 var assemblyDefinition = AssemblyResolver.Resolve(assemblyRef);
                 if (assemblyDefinition == null)
                 {
@@ -142,10 +144,31 @@ namespace Corvalius.ArraySlice.Fody
             catch (Exception ex)
             {
                 LogError(ex.Message);
-//#if DEBUG
-//                Debugger.Launch();
-//#endif
+#if DEBUG
+                Debugger.Launch();
+#endif
             }
+        }
+
+        private Assembly ResolveAssembly(object sender, ResolveEventArgs args)
+        {
+            try
+            {
+                LogInfo("Entering custom resolve assembly");
+                if (args.Name.Contains("Corvalius.ArraySlice") && !string.IsNullOrWhiteSpace(this.AddinDirectoryPath))
+                {
+                    var assemblyFilename = Path.Combine(this.AddinDirectoryPath, "Corvalius.ArraySlice.dll");
+                    LogWarning("Assembly: " + assemblyFilename);
+                    
+                    return Assembly.LoadFile(assemblyFilename);
+                }
+            }
+            finally
+            {
+                LogInfo("Exiting custom resolve assembly");
+            }
+
+            return null;
         }
 
         private IEnumerable<SliceParameters> PruneUnusedInjectionPoints(MethodDefinition method, TypeDefinition typeToFind, IEnumerable<SliceParameters> occurrences)
