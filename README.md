@@ -1,75 +1,108 @@
-![Icon](https://raw.github.com/Fody/BasicFodyAddin/master/Icons/package_icon.png)
+This weaver will optimize the use of the ArraySlice to be on par with the use of an standard managed array.
 
-This is a simple solution built as a starter for writing [Fody](https://github.com/Fody/Fody) addins.
+With array slices you can build multiple views from the same array and you dont have to modify your algorithms to account for the moving offset inside the backing array. In essence it is a System.ArraySegment<T> but your algorithms wont need to know they are dealing with a data segment. 
 
-## The moving parts
+Furthermore, you can go the next best route and implement it with indexers like in: http://weblogs.asp.net/wim/ArraySegment-Structure---what-were-they-thinking_3F00_, with System.ArraySlice<T> you dont pay the performance cost imposed by the indexers. 
 
-### BasicFodyAddin Project
+### How does Array Slices works?
 
-The project that does the weaving. 
+Wherever you use an T[] you can switch it to an ArraySlice<T>. Why? Because the constructor would even take your array and pack it inside the ArraySlice structure. 
 
-#### Output of the project
+Lets say you have this code:
 
-It outputs a file named SampleFodyAddin.Fody. The '.Fody' suffix is necessary for it to be picked up by Fody.
+        public void Assign(float[] getParameter, float[] setParameter)
+        {
+            for (int i = 0; i < getParameter.Count; i++)
+                setParameter[i] = getParameter[i];
+        }
 
-#### ModuleWeaver
+Now you can just go and change it to:
 
-ModuleWeaver.cs is where the target assembly is modified. Fody will pick up this type during a its processing.
+        public void Assign(ArraySlice<float> getParameter, ArraySlice<float> setParameter)
+        {
+            for (int i = 0; i < getParameter.Count; i++)
+                setParameter[i] = getParameter[i];
+        }
 
-In this case a new type is being injected into the target assembly that looks like this.
+All the call sites will convert their array types into ArraySlice<T> and work as expected.
 
-	public class Hello
-	{
-	    public string World()
-	    {
-	        return "Hello World";
-	    }
-	}
-
-See [ModuleWeaver](https://github.com/Fody/Fody/wiki/ModuleWeaver)
- for more details.
-
-### Nuget Project
-
-Fody addins are deployed as [nuget](http://nuget.org/) packages. NugetProject builds the package for SampleFodyAddin as part of a build. The output of this project is placed in *SolutionDir*/NuGetBuild. 
-
-This project uses  [pepita](https://github.com/SimonCropp/Pepita) to construct the package but you could also use nuget.exe.
-
-For more information on the nuget structure of Fody addins see [DeployingAddinsAsNugets](https://github.com/Fody/Fody/wiki/DeployingAddinsAsNugets)
+#### Performance
 
 
-### AssemblyToProcess Project
+Lets say that we do micro-benchmark (even though microbenchmarks have lots of issues). 
 
-A target assembly to process and then validate with unit tests.
+We will use an standard backing array of 1000000 floats and do 1000 tries of 100000 elements each starting at offset 49421 (to avoid optimizations at 0) and run those in release mode from the command propmt.
 
-### Tests  Project
+An standard array use would look like this:
 
-This is where you would place your unit tests. 
+                const int offset = 49421;
+                const int endPlace = offset + 100000;
 
-Note that it does not reference AssemblyToProcess as this could cause assembly loading issues. However we want to force AssemblyToProcess to be built prior to the Tests project. So in Tests.csproj there is a non-reference dependency to force the build order.
+                float t = 0;
+                for (int tries = 0; tries < 1000; tries++)
+                {
+                    for (int i = offset; i < endPlace; i++)
+                    {
+                        t = data[i];
+                    }
+                }
 
-    <ProjectReference Include="..\AssemblyToProcess\AssemblyToProcess.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
+Access it though an ArraySegment<float> would look like this:
 
-The test assembly contains three parts.
+                for (int tries = 0; tries < 1000; tries++)
+                {
+                    for (int i = 0; i < 100000; i++)
+                    {
+                        t = segment.Array[segment.Offset + i];
+                    }
+                }
+                
+You can still optimize this creating local variables for the array and offset and get performance comparable with the standard array use at the cost of code readability.
 
-#### 1. WeaverHelper
+We can do the same with the DelimitedArray implementation shown in the article.
 
-A helper class that takes the output of  AssemblyToProcess and uses ModuleWeaver to process it. It also create a copy of the target assembly suffixed with '2' so a side-by-side comparison of the before and after IL can be done using a decompiler.
+                var delimited = new DelimitedArray<float>(data, offset, 100000);
 
-#### 2. Verifier
+                for (int tries = 0; tries < 1000; tries++)
+                {
+                    for (int i = 0; i < 100000; i++)
+                    {
+                        t = delimited[i];
+                    }
+                }
+                
+And we can go even further and optimize the hell out of the indexer in the following way (look maaa no checks):
 
-A helper class that runs [peverfiy](http://msdn.microsoft.com/en-us/library/62bwd2yd.aspx) to validate the resultant assembly.
+        public T this[int index]
+        {            
+            [MethodImplAttribute(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return this._array[this._offset + index];
+            }
+        }
 
-#### 3. Tests
+--Results
 
-The actual unit tests that use WeaverHelper and Verifier. It has one test to construct and execute the injected class.
+Access via delimited array: 258ms.
+Access via array segment: 68ms.
+Access via inline no checks delimited array: 45ms.
+Access without offset: 38ms.
+Access via array slice: 38ms.
 
-### No reference to Fody
+The performance of the microbenchmark tells the history. 
 
-Not that there is no reference to Fody nor are any Fody files included in the solution. Interaction with Fody is done by convention at compile time.
+Delimited arrays are the least performant method. Mainly because of the indexer and the checks. Closing the gap is the use of the optimized inline no checks delimited array, however that implementation is still slower and for high performance (typically numerical code) the 30% difference is still too much.
 
-## Icon
+Historically the preferred method for high performance code is accessing the naked array working with offsets which is the fastest way available. But, working with the offsets can become a problem pretty fast. 
 
-<a href="http://thenounproject.com/noun/lego/#icon-No16919" target="_blank">Lego</a> designed by <a href="http://thenounproject.com/timur.zima" target="_blank">Timur Zima</a> from The Noun Project
+With Array Slices we achieve comparable performance, without having to deal with offsets. We achieve that rewriting the IL to achieve the fastest implementation of indexers around. Truth be told, we actually get rid of the indexers altoghether but that is another story.
+
+#### Known issues
+
+Array Slices will not optimize slices that are unsafe. For example, slices that are stored in fields. The reason is that they can change in multithreaded environments and therefore the inlining process will create very difficult to diagnose problems. In the future we will let you override the inlining process with an Unsafe version you can use to achieve this.
+
+For now, as a workaround, to allow optimization you just need to copy the reference to a method variable and use it from there. 
+#### Contributions
+
+This project accepts contributions. We will always look for better inlining analysis and smarter code to achieve the fastest implementation available. Also let us know if your project use Array Slices
