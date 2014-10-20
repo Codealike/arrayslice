@@ -1,8 +1,10 @@
-This weaver will optimize the use of the ArraySlice to be on par with the use of an standard managed array.
+Array Slices is a NuGet Package that uses Fody (https://github.com/Fody/Fody) to optimize the use of the ArraySlice to be on par performance wise with the standard managed arrays when dealing with high-performance numerical code.
 
-With array slices you can build multiple views from the same array and you dont have to modify your algorithms to account for the moving offset inside the backing array. In essence it is a System.ArraySegment<T> but your algorithms wont need to know they are dealing with a data segment. 
+With array slices you can build multiple views from the same array and you dont have to modify your algorithms to account for the moving offset inside the backing array. In essence, it is an enhanced version of System.ArraySegment<T> (http://referencesource.microsoft.com/#mscorlib/system/arraysegment.cs) but your algorithms wont need to know they are dealing with a data segment's offset explicitely. 
 
-Furthermore, you can go the next best route and implement it with indexers like in: http://weblogs.asp.net/wim/ArraySegment-Structure---what-were-they-thinking_3F00_, with System.ArraySlice<T> you dont pay the performance cost imposed by the indexers. 
+There are other similar alternatives, like using indexers (http://weblogs.asp.net/wim/ArraySegment-Structure---what-were-they-thinking_3F00_), but in the end the indexers performance hit will make it worthwhile to avoid those implementations for high-performance code. 
+
+With System.ArraySlice<T> you dont pay the performance cost imposed by the indexers while keeping the simplicity they provide to handle multiple views inside a shared backing array. 
 
 ### How does Array Slices works?
 
@@ -82,13 +84,13 @@ And we can go even further and optimize the hell out of the indexer in the follo
             }
         }
 
---Results
+####Results
 
-Access via delimited array: 258ms.
-Access via array segment: 68ms.
-Access via inline no checks delimited array: 45ms.
-Access without offset: 38ms.
-Access via array slice: 38ms.
+- Access via delimited array: 258ms.
+- Access via array segment: 68ms.
+- Access via inline no checks delimited array: 45ms.
+- Access without offset: 38ms.
+- Access via array slice: 38ms.
 
 The performance of the microbenchmark tells the history. 
 
@@ -102,7 +104,10 @@ With Array Slices we achieve comparable performance, without having to deal with
 
 Array Slices will not optimize slices that are unsafe. For example, slices that are stored in fields. The reason is that they can change in multithreaded environments and therefore the inlining process will create very difficult to diagnose problems. In the future we will let you override the inlining process with an Unsafe version you can use to achieve this.
 
-For now, as a workaround, to allow optimization you just need to copy the reference to a method variable and use it from there. 
+For now, as a workaround, to allow optimization you just need to copy the reference to a method variable and use it from there.
+
+Array Slices current optimization heuristic is also a bit too aggresize to optimize, and select single accesses (non loops) methods, causing some simple code to execute a couple extra instructions. Those are the type of methods you wouldnt even consider use an ArraySegment anyways.  
+
 #### Contributions
 
 This project accepts contributions. We will always look for better inlining analysis and smarter code to achieve the fastest implementation available. Also let us know if your project use Array Slices
