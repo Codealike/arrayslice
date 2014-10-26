@@ -1,4 +1,4 @@
-Array Slices is a NuGet Package that uses Fody (https://github.com/Fody/Fody) to optimize the use of the ArraySlice to be on par performance wise with the standard managed arrays when dealing with high-performance numerical code.
+Array Slices is a NuGet Package (https://www.nuget.org/packages/ArraySlice.Fody/) that uses Fody (https://github.com/Fody/Fody) to optimize the use of the ArraySlice to be on par performance wise with the standard managed arrays when dealing with high-performance numerical code.
 
 With array slices you can build multiple views from the same array and you dont have to modify your algorithms to account for the moving offset inside the backing array. In essence, it is an enhanced version of System.ArraySegment<T> (http://referencesource.microsoft.com/#mscorlib/system/arraysegment.cs) but your algorithms wont need to know they are dealing with a data segment's offset explicitely. 
 
