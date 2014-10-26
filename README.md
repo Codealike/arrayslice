@@ -2,7 +2,7 @@ Array Slices is a NuGet Package (https://www.nuget.org/packages/ArraySlice.Fody/
 
 With array slices you can build multiple views from the same array and you dont have to modify your algorithms to account for the moving offset inside the backing array. In essence, it is an enhanced version of System.ArraySegment<T> (http://referencesource.microsoft.com/#mscorlib/system/arraysegment.cs) but your algorithms wont need to know they are dealing with a data segment's offset explicitely. 
 
-There are other similar alternatives, like using indexers (http://weblogs.asp.net/wim/ArraySegment-Structure---what-were-they-thinking_3F00_), but in the end the indexers performance hit will make it worthwhile to avoid those implementations for high-performance code. 
+There are other similar alternatives, like using indexers (http://weblogs.asp.net/wim/ArraySegment-Structure---what-were-they-thinking_3F00_), but in the end the indexers performance hit will make it worthwhile to devise implementations for high-performance code. 
 
 With System.ArraySlice<T> you dont pay the performance cost imposed by the indexers while keeping the simplicity they provide to handle multiple views inside a shared backing array. 
 
