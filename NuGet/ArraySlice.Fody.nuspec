@@ -4,16 +4,17 @@
     <id>ArraySlice.Fody</id>
     <version>$version$</version>
     <title>ArraySlice performance optimizer.</title>
-    <authors>Federico Lois</authors>
-    <owners>Corvalius, Codealike</owners>
+    <authors>Federico Lois - Codealike</authors>
+    <owners>Corvalius</owners>
     <developmentDependency>true</developmentDependency>
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
     <projectUrl>https://github.com/Codealike/arrayslice</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Array Slice allows to build memory shared arrays with the same syntax as an array and still retain the performance of using raw arrays. We modify the IL to make sure you can squeeze all the performance that it is available to you.</description>
     <summary />
+    <iconUrl>https://raw.githubusercontent.com/Codealike/arrayslice/master/Icons/iconSmall.png</iconUrl>
     <language>en-EU</language>
-    <tags>ILWeaving, Fody, Cecil, Arrays</tags>
+    <tags>Array, Slice, ArraySegment, ILWeaving, Fody</tags>
     <dependencies>
       <dependency id="Fody"/>
     </dependencies>
