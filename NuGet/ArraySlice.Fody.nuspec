@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
     <id>ArraySlice.Fody</id>
     <version>$version$</version>
     <title>ArraySlice performance optimizer.</title>
@@ -16,7 +16,7 @@
     <language>en-EU</language>
     <tags>Array, Slice, ArraySegment, ILWeaving, Fody</tags>
     <dependencies>
-      <dependency id="Fody"/>
+      <dependency id="Fody" version="1.26.0"/>
     </dependencies>
   </metadata>
 
