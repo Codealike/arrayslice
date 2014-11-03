@@ -39,7 +39,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArraySliceContainer.cs" />
+    <Compile Include="CoreFunctionality.cs" />
+    <Compile Include="ArraySliceContainerBase.cs" />
+    <Compile Include="ControlWeavingAtMethodLevel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Corvalius.ArraySlice\Corvalius.ArraySlice.Portable.csproj">

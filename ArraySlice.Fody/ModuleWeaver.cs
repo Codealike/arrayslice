@@ -140,6 +140,8 @@ namespace Corvalius.ArraySlice.Fody
 
                     method.Body.OptimizeMacros();
                 }
+
+                RemoveAttributes();
             }
             catch (Exception ex)
             {
@@ -173,7 +175,18 @@ namespace Corvalius.ArraySlice.Fody
 
         private IEnumerable<SliceParameters> PruneUnusedInjectionPoints(MethodDefinition method, TypeDefinition typeToFind, IEnumerable<SliceParameters> occurrences)
         {
-            // We don't do anything for now.
+            // We filter out explicitely left out optimizations.
+            CustomAttribute behavior;
+            if (method.ContainsBehaviorAttribute(out behavior))
+            {
+                OptimizationMode mode = (OptimizationMode) behavior.ConstructorArguments[0].Value;
+
+                switch( mode )
+                {
+                    case OptimizationMode.None: return new SliceParameters[0];
+                }
+            }
+
             return occurrences;
         }
 
@@ -388,6 +401,33 @@ namespace Corvalius.ArraySlice.Fody
             }
 
             return false;
+        }
+
+        private void RemoveAttributes()
+        {
+            ModuleDefinition.Assembly.RemoveAllArraySliceAttributes();
+            ModuleDefinition.RemoveAllArraySliceAttributes();
+
+            var allTypes = new List<TypeDefinition>(ModuleDefinition.GetTypes());
+            foreach (var typeDefinition in allTypes)
+            {
+                typeDefinition.RemoveAllArraySliceAttributes();
+
+                foreach (var method in typeDefinition.Methods)
+                {
+                    method.RemoveAllArraySliceAttributes();
+
+                    foreach (var parameter in method.Parameters)
+                    {
+                        parameter.RemoveAllArraySliceAttributes();
+                    }
+                }
+
+                foreach (var property in typeDefinition.Properties)
+                {
+                    property.RemoveAllArraySliceAttributes();
+                }
+            }
         }
     }
 }

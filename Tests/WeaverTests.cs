@@ -47,11 +47,20 @@ namespace Corvalius.ArraySlice.Tests
         public void ValidateFindMethodsThatUsesArraySlicesInBody()
         {
             var typeToFind = DefinitionFinder.FindType(typeof(ArraySlice<>));
-            var methods = weavingTask.FindMethodsUsingArraySlices(typeToFind);
+            var methods = weavingTask.FindMethodsUsingArraySlices(typeToFind)
+                                     .Where(x => !x.Name.StartsWith("DoNot"));
 
             Assert.AreEqual(0, methods.Count());
+        }
 
-            var type = assembly.GetType("ArraySliceContainer");
+        [Test]
+        public void ValidateFindMethodsThatDoNotUsesArraySlicesInBody()
+        {
+            var typeToFind = DefinitionFinder.FindType(typeof(ArraySlice<>));
+            var methods = weavingTask.FindMethodsUsingArraySlices(typeToFind)
+                                     .Where(x => x.Name.StartsWith("DoNot"));
+
+            Assert.AreEqual(2, methods.Count());
         }
 
 #if(DEBUG)

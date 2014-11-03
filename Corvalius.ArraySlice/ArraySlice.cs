@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -22,6 +23,7 @@ namespace System
         {
             if (array == null)
                 throw new ArgumentNullException("array");
+            Contract.EndContractBlock();
 
             Array = array;
             Offset = 0;
@@ -38,6 +40,7 @@ namespace System
                 throw new ArgumentOutOfRangeException("count", "The argument cannot be negative."); 
             if (array.Length - offset < count)
                 throw new ArgumentException("The length of the slice cannot be less than 0.");
+            Contract.EndContractBlock();
 
             Array = array;
             Offset = offset;
@@ -77,11 +80,21 @@ namespace System
         public T this[int index]
         {
             get
-            {                
+            {
+                Contract.Requires(index >= 0);
+                Contract.Requires(index < this.Count);
+                Contract.Requires(this.Offset + index < this.Array.Length);
+                Contract.EndContractBlock();
+
                 return Array[Offset + index];
             }
             set
             {
+                Contract.Requires(index >= 0);
+                Contract.Requires(index < this.Count);
+                Contract.Requires(this.Offset + index < this.Array.Length);
+                Contract.EndContractBlock();
+
                 Array[Offset + index] = value;
             }
         }

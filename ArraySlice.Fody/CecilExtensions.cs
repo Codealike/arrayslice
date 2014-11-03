@@ -113,6 +113,30 @@ namespace Corvalius.ArraySlice.Fody
             return reference;
         }
 
+        public static bool ContainsBehaviorAttribute(this ICustomAttributeProvider definition, out CustomAttribute attribute)
+        {
+            attribute = null;
 
+            var customAttributes = definition.CustomAttributes;
+
+            var query = customAttributes.Where(x => x.AttributeType.Name == "ArraySliceBehaviorAttribute");
+            if (!query.Any())
+                return false;
+
+            attribute = query.First();
+            return attribute != null;
+        }
+
+        public static void RemoveAllArraySliceAttributes(this ICustomAttributeProvider definition)
+        {
+            var customAttributes = definition.CustomAttributes;
+
+            var attributes = customAttributes.Where(x => x.AttributeType.Name == "ArraySliceBehaviorAttribute").ToArray();
+
+            foreach (var attribute in attributes)
+            {
+                customAttributes.Remove(attribute);
+            }
+        }
     }
 }

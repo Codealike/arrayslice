@@ -2,12 +2,12 @@
 
 namespace AssemblyToProcess
 {
-    public class ArraySliceContainer
+    public class CoreFunctionality : ArraySliceContainerBase
     {
         private ArraySlice<float> FieldSegment;
         private ArraySlice<float> AnotherFieldSegment;
 
-        public ArraySliceContainer()
+        public CoreFunctionality()
         {
             int offset = 10;
             var data = InitializeData();
@@ -17,25 +17,6 @@ namespace AssemblyToProcess
 
             FieldSegment = new ArraySlice<float>(data, offset, 5);
             AnotherFieldSegment = new ArraySlice<float>(data2, offset2, 5);
-        }
-
-
-        private static float[] InitializeData()
-        {
-            float[] data = new float[100];
-            for (int i = 0; i < data.Length; i++)
-                data[i] = i;
-
-            return data;
-        }
-
-        private static T[] InitializeData<T>()
-        {
-            T[] data = new T[100];
-            for (int i = 0; i < data.Length; i++)
-                data[i] = default(T);
-
-            return data;
         }
 
         public float SingleAccessGetter()
