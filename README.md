@@ -6,9 +6,13 @@ There are other similar alternatives, like using indexers (http://weblogs.asp.ne
 
 With System.ArraySlice<T> you dont pay the performance cost imposed by the indexers while keeping the simplicity they provide to handle multiple views inside a shared backing array. 
 
+### When to use Array Slices?
+
+Array slices is specially useful when dealing with sliding window algorithms. Most of the algorithms work on partial snapshots of the data and usually you can launch several in parallel. Usually the data is contiguous arrays of data (for performance reasons) and then those algorithms have to deal with the sliding window offsets in the data. With Array Slices each window will start at 0 (no explicit offsetting) while at the same time allow concurrent execution with minimal burden.
+
 ### How does Array Slices works?
 
-Wherever you use an T[] you can switch it to an ArraySlice<T>. Why? Because the constructor would even take your array and pack it inside the ArraySlice structure. 
+Wherever you use an T[] you can switch it to an ArraySlice<T>. Why? Because the constructor would even take your array and pack it inside the ArraySlice structure (future optimizations will be added for 0 offset slices). 
 
 Lets say you have this code:
 
@@ -33,7 +37,7 @@ All the call sites will convert their array types into ArraySlice<T> and work as
 
 Lets say that we do micro-benchmark (even though microbenchmarks have lots of issues). 
 
-We will use an standard backing array of 1000000 floats and do 1000 tries of 100000 elements each starting at offset 49421 (to avoid optimizations at 0) and run those in release mode from the command propmt.
+We will use an standard backing array of 1000000 floats and do 1000 tries of 100000 elements each starting at offset 49421 (to avoid optimizations at 0) and run those in release mode from the command prompt.
 
 An standard array use would look like this:
 
@@ -106,7 +110,7 @@ Array Slices will not optimize slices that are unsafe. For example, slices that 
 
 For now, as a workaround, to allow optimization you just need to copy the reference to a method variable and use it from there.
 
-Array Slices current optimization heuristic is also a bit too aggresize to optimize, and select single accesses (non loops) methods, causing some simple code to execute a couple extra instructions. Those are the type of methods you wouldnt even consider use an ArraySegment anyways.  
+Array Slices current optimization heuristic is also a bit too aggresize to optimize, and select single accesses (non loops) methods, causing some simple code to execute a couple extra instructions. Those are the type of methods you wouldnt even consider use an ArraySegment anyways. You can now opt-out on those methods explicitely with the  [ArraySliceBehavior(OptimizationMode.None)] attribute.
 
 #### Contributions
 
