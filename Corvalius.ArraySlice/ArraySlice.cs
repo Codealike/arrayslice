@@ -17,7 +17,7 @@ namespace System
         [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly T[] Array;
 
-        public readonly int Count;
+        public readonly int Length;
 
         public ArraySlice(T[] array)
         {
@@ -27,7 +27,7 @@ namespace System
 
             Array = array;
             Offset = 0;
-            Count = array.Length;
+            Length = array.Length;
         }
 
         public ArraySlice(T[] array, int offset, int count)
@@ -37,21 +37,33 @@ namespace System
             if (offset < 0)
                 throw new ArgumentOutOfRangeException("offset", "The argument cannot be negative."); 
             if (count < 0)
-                throw new ArgumentOutOfRangeException("count", "The argument cannot be negative."); 
+                throw new ArgumentOutOfRangeException("count", "The argument cannot be negative.");
             if (array.Length - offset < count)
                 throw new ArgumentException("The length of the slice cannot be less than 0.");
             Contract.EndContractBlock();
 
             Array = array;
             Offset = offset;
-            Count = count;
+            Length = count;
+        }
+
+        public ArraySlice(ArraySlice<T> slice) 
+            : this ( slice.Array, slice.Offset, slice.Length)
+        {}
+
+        public ArraySlice(ArraySlice<T> slice, int offset, int count)
+            : this(slice.Array, slice.Offset + offset, count)
+        {
+            if (slice.Length - offset < count)
+                throw new ArgumentException("Slices created from other slices must be contained in the source slice. The length of the slice cannot be less than 0.");
+            Contract.EndContractBlock();
         }
 
         public override int GetHashCode()
         {
             return null == Array
                         ? 0
-                        : Array.GetHashCode() ^ Offset ^ Count;
+                        : Array.GetHashCode() ^ Offset ^ Length;
         }
 
         public override bool Equals(Object obj)
@@ -64,7 +76,7 @@ namespace System
 
         public bool Equals(ArraySlice<T> obj)
         {
-            return obj.Array == Array && obj.Offset == Offset && obj.Count == Count;
+            return obj.Array == Array && obj.Offset == Offset && obj.Length == Length;
         }
 
         public static bool operator ==(ArraySlice<T> a, ArraySlice<T> b)
@@ -82,7 +94,7 @@ namespace System
             get
             {
                 Contract.Requires(index >= 0);
-                Contract.Requires(index < this.Count);
+                Contract.Requires(index < this.Length);
                 Contract.Requires(this.Offset + index < this.Array.Length);
                 Contract.EndContractBlock();
 
@@ -91,7 +103,7 @@ namespace System
             set
             {
                 Contract.Requires(index >= 0);
-                Contract.Requires(index < this.Count);
+                Contract.Requires(index < this.Length);
                 Contract.Requires(this.Offset + index < this.Array.Length);
                 Contract.EndContractBlock();
 
