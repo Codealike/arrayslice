@@ -82,13 +82,13 @@
     <Compile Include="WeavingException.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Corvalius.ArraySlice\Corvalius.ArraySlice.Portable.csproj">
-      <Project>{90bc2afe-be28-4827-9484-74fb4940c552}</Project>
-      <Name>Corvalius.ArraySlice.Portable</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\Corvalius.ArraySlice.Portable328\Corvalius.ArraySlice.Portable328.csproj">
+      <Project>{90bc2afe-be28-4827-9484-74fb4940c552}</Project>
+      <Name>Corvalius.ArraySlice.Portable328</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

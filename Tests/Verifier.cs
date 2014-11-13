@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
-using NUnit.Framework;
+using Xunit;
 
 namespace Corvalius.ArraySlice.Tests
 {
@@ -13,7 +13,7 @@ namespace Corvalius.ArraySlice.Tests
             var before = Validate(beforeAssemblyPath);
             var after = Validate(afterAssemblyPath);
             var message = string.Format("Failed processing {0}\r\n{1}", Path.GetFileName(afterAssemblyPath), after);
-            Assert.AreEqual(TrimLineNumbers(before), TrimLineNumbers(after), message);
+            Assert.Equal(TrimLineNumbers(before), TrimLineNumbers(after));
         }
 
         static string Validate(string assemblyPath2)

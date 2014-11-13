@@ -21,8 +21,11 @@
   </metadata>
 
   <files>
-    <file src="Lib\net45\Corvalius.ArraySlice.dll" />
-    <file src="Lib\net40\Corvalius.ArraySlice.dll" />
-    <file src="Lib\portable\Corvalius.ArraySlice.dll"/>
+    <file target="Lib\net35\Corvalius.ArraySlice.dll" />
+    <file target="Lib\portable-net40+sl5+wp8+win8\Corvalius.ArraySlice.dll" />
+    <file target="Lib\portable-net45+sl5+win8\Corvalius.ArraySlice.dll" />
+    <file target="Lib\portable-net45+sl5+wp81+win8\Corvalius.ArraySlice.dll" />
+    <file target="Lib\portable-net45+win8\Corvalius.ArraySlice.dll" />
+    <file target="Lib\portable-net45+wp81+win8\Corvalius.ArraySlice.dll" />
   </files>
 </package>
