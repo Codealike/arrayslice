@@ -5,20 +5,11 @@ using System.Text;
 
 namespace System
 {
-    public enum OptimizationMode
-    {
-        None,
-        Safe,
-    }
+    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+    public class ArraySliceDoNotOptimize : Attribute
+    { }
 
-    [AttributeUsage( AttributeTargets.Method, Inherited=false, AllowMultiple=false )]
-    public class ArraySliceBehaviorAttribute : Attribute
-    {
-        public OptimizationMode Mode { get; private set; }
-
-        public ArraySliceBehaviorAttribute(OptimizationMode mode)
-        {
-            this.Mode = mode;
-        }
-    }
+    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+    public class ArraySliceUnsafeOptimize : Attribute
+    { }
 }

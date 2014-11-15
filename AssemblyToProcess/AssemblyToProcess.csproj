@@ -45,6 +45,7 @@
     <Compile Include="CoreFunctionality.cs" />
     <Compile Include="ArraySliceContainerBase.cs" />
     <Compile Include="ControlWeavingAtMethodLevel.cs" />
+    <Compile Include="HandleInterfaces.cs" />
     <Compile Include="ReduceExample.cs" />
   </ItemGroup>
   <ItemGroup>

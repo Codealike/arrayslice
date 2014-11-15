@@ -7,7 +7,7 @@ namespace AssemblyToProcess
 {
     public class ControlWeavingAtMethodLevel : ArraySliceContainerBase
     {
-        [ArraySliceBehavior(OptimizationMode.None)]
+        [ArraySliceDoNotOptimize]
         public float DoNotOptimizeAccessGetter()
         {
             int offset = 10;
@@ -19,7 +19,7 @@ namespace AssemblyToProcess
             return result;
         }
 
-        [ArraySliceBehavior(OptimizationMode.None)]
+        [ArraySliceDoNotOptimize]
         public float[] DoNotOptimizeAccessSetter()
         {
             int offset = 10;

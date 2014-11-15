@@ -145,7 +145,7 @@ namespace Corvalius.ArraySlice.Fody
             }
             catch (Exception ex)
             {
-                LogError(ex.Message);
+                LogError(ex.Message + Environment.NewLine + "StackTrace: " + ex.StackTrace);
 #if DEBUG
                 Debugger.Launch();
 #endif
@@ -156,12 +156,12 @@ namespace Corvalius.ArraySlice.Fody
         {
             try
             {
-                LogInfo("Entering custom resolve assembly");
+                LogInfo("Entering custom resolve assembly for '" + args.Name + "' and requested by '" + args.RequestingAssembly.FullName + "'");
                 if (args.Name.Contains("Corvalius.ArraySlice") && !string.IsNullOrWhiteSpace(this.AddinDirectoryPath))
                 {
                     var assemblyFilename = Path.Combine(this.AddinDirectoryPath, "Corvalius.ArraySlice.dll");
                     LogWarning("Assembly: " + assemblyFilename);
-                    
+
                     return Assembly.LoadFile(assemblyFilename);
                 }
             }
@@ -179,11 +179,11 @@ namespace Corvalius.ArraySlice.Fody
             CustomAttribute behavior;
             if (method.ContainsBehaviorAttribute(out behavior))
             {
-                OptimizationMode mode = (OptimizationMode) behavior.ConstructorArguments[0].Value;
+                var mode = behavior.AttributeType.Name;
 
-                switch( mode )
+                switch (mode)
                 {
-                    case OptimizationMode.None: return new SliceParameters[0];
+                    case "ArraySliceDoNotOptimize": return new SliceParameters[0];
                 }
             }
 
@@ -369,8 +369,8 @@ namespace Corvalius.ArraySlice.Fody
 
         public IEnumerable<MethodDefinition> FindMethodsUsingArraySlices(TypeDefinition typeToFind)
         {
-            var methods = from types in ModuleDefinition.GetAllTypes()
-                          from method in types.Methods
+            var methods = from type in ModuleDefinition.GetAllTypes()
+                          from method in type.Methods
                           where IsMethodUsingTypeIndexers(method, typeToFind)
                           select method;
 
@@ -379,6 +379,9 @@ namespace Corvalius.ArraySlice.Fody
 
         private bool IsMethodUsingTypeIndexers(MethodDefinition method, TypeDefinition typeToFind)
         {
+            if (method.Body == null)
+                return false;
+
             foreach (var instruction in method.Body.Instructions)
             {
                 if (!instruction.OpCode.IsCall())

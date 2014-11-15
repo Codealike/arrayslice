@@ -92,7 +92,7 @@ namespace AssemblyToProcess
             return array[0];
         }
 
-        [ArraySliceBehavior(OptimizationMode.None)]
+        [ArraySliceDoNotOptimize]
         private static void ReduceStepWithSlicesNoOptimization(ArraySlice<double> first, ArraySlice<double> second)
         {
             int length = first.Length;
@@ -100,7 +100,7 @@ namespace AssemblyToProcess
                 first[i] = first[i] + second[i];
         }
 
-        [ArraySliceBehavior(OptimizationMode.None)]
+        [ArraySliceDoNotOptimize]
         public static double WithSlicesNoOptimization(ArraySlice<double> array)
         {
             Stopwatch watch = new Stopwatch();

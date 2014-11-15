@@ -119,7 +119,7 @@ namespace Corvalius.ArraySlice.Fody
 
             var customAttributes = definition.CustomAttributes;
 
-            var query = customAttributes.Where(x => x.AttributeType.Name == "ArraySliceBehaviorAttribute");
+            var query = customAttributes.Where(x => x.AttributeType.Name.StartsWith("ArraySlice"));
             if (!query.Any())
                 return false;
 
@@ -131,7 +131,7 @@ namespace Corvalius.ArraySlice.Fody
         {
             var customAttributes = definition.CustomAttributes;
 
-            var attributes = customAttributes.Where(x => x.AttributeType.Name == "ArraySliceBehaviorAttribute").ToArray();
+            var attributes = customAttributes.Where(x => x.AttributeType.Name.StartsWith("ArraySlice")).ToArray();
 
             foreach (var attribute in attributes)
             {
