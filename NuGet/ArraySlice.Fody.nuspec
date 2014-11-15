@@ -19,13 +19,4 @@
       <dependency id="Fody" version="1.26.0"/>
     </dependencies>
   </metadata>
-
-  <files>
-    <file target="Lib\net35\Corvalius.ArraySlice.dll" />
-    <file target="Lib\portable-net40+sl5+wp8+win8\Corvalius.ArraySlice.dll" />
-    <file target="Lib\portable-net45+sl5+win8\Corvalius.ArraySlice.dll" />
-    <file target="Lib\portable-net45+sl5+wp81+win8\Corvalius.ArraySlice.dll" />
-    <file target="Lib\portable-net45+win8\Corvalius.ArraySlice.dll" />
-    <file target="Lib\portable-net45+wp81+win8\Corvalius.ArraySlice.dll" />
-  </files>
 </package>
