@@ -137,9 +137,17 @@ namespace System
             }
         }
 
-        public static implicit operator ArraySlice<T> ( T[] src )
+        public static implicit operator ArraySlice<T>(T[] src)
         {
             return new ArraySlice<T>(src);
+        }
+
+        public static implicit operator T[](ArraySlice<T> src)
+        {
+            if (src.Count == src.Array.Length && src.Offset == 0)
+                return src.Array;
+            else
+                throw new InvalidCastException("Casting implicitely an ArraySlice<T> into T[] is not possible when the slice does not contains the entire array.");
         }
 
         public int IndexOf(T item)
