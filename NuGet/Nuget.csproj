@@ -41,11 +41,19 @@
     <Copy SourceFiles="$(SolutionDir)ArraySlice.Fody\bin\$(ConfigurationName)\ArraySlice.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <!-- Copying it twice so the resolver can find it -->
     <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable328\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
+
     <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable328\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" />
     <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable259\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" />
     <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable78\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1" />
     <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable47\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1" />
     <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable7\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net45+netcore45+MonoAndroid1+MonoTouch1" />
+
+    <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable328\bin\$(ConfigurationName)\CodeContracts\Corvalius.ArraySlice.Contracts.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" />
+    <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable259\bin\$(ConfigurationName)\CodeContracts\Corvalius.ArraySlice.Contracts.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" />
+    <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable78\bin\$(ConfigurationName)\CodeContracts\Corvalius.ArraySlice.Contracts.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1" />
+    <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable47\bin\$(ConfigurationName)\CodeContracts\Corvalius.ArraySlice.Contracts.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1" />
+    <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Portable7\bin\$(ConfigurationName)\CodeContracts\Corvalius.ArraySlice.Contracts.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\portable-net45+netcore45+MonoAndroid1+MonoTouch1" />
+
     <Copy SourceFiles="$(SolutionDir)Corvalius.ArraySlice.Net35\bin\$(ConfigurationName)\Corvalius.ArraySlice.dll" DestinationFolder="$(SolutionDir)NuGetBuild\Lib\net35" />
     <Copy SourceFiles="$(SolutionDir)NuGet\Fody_ToBeDeleted.txt" DestinationFolder="$(SolutionDir)NuGetBuild\Content" />
     <Copy SourceFiles="$(ProjectDir)install.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
